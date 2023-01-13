@@ -1,4 +1,4 @@
-# goRedisDemo
+# gobasicRedisgRPC
 This is my repository for learning gRPC concept.
 TODO:
 - Rename and fix env var in file app copy.env
