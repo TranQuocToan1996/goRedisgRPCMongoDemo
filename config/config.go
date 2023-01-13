@@ -19,9 +19,16 @@ type Config struct {
 	RefreshTokenExpiresIn time.Duration `mapstructure:"REFRESH_TOKEN_EXPIRED_IN"`
 	AccessTokenMaxAge     int           `mapstructure:"ACCESS_TOKEN_MAXAGE"`
 	RefreshTokenMaxAge    int           `mapstructure:"REFRESH_TOKEN_MAXAGE"`
+	BcryptCost            int           `mapstructure:"BCYPT_COST"`
+	ARGON2IDMemory        uint32        `mapstructure:"ARGON2ID_MEMORY"`
+	ARGON2IDIteration     uint32        `mapstructure:"ARGON2ID_ITERATION"`
+	ARGON2IDParallelsism  uint8         `mapstructure:"ARGON2ID_PARALLELISM"`
+	ARGON2IDSaltLength    uint32        `mapstructure:"ARGON2ID_SALT_LENGTH"`
+	ARGON2IDKeyLength     uint32        `mapstructure:"ARGON2ID_KEY_LENGTH=32"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
+	// TODO: Read key
 	viper.AddConfigPath(path)
 	viper.SetConfigType("env")
 	viper.SetConfigName("app")

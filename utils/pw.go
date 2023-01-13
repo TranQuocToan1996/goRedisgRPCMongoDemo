@@ -8,8 +8,13 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/TranQuocToan1996/redislearn/config"
 	"golang.org/x/crypto/argon2"
 	"golang.org/x/crypto/bcrypt"
+)
+
+const (
+	constantTimeMatch = 1
 )
 
 var (
@@ -22,11 +27,11 @@ var (
 	Pw passworder
 )
 
-func init() {
-	Pw = &bcryptImpl{
-		cost: bcrypt.DefaultCost,
-	}
-}
+// func init() {
+// 	Pw = &bcryptImpl{
+// 		cost: bcrypt.DefaultCost,
+// 	}
+// }
 
 type passworder interface {
 	HashPassword(password string) (string, error)
@@ -60,6 +65,16 @@ type argon2id struct {
 	parallelism uint8  // The number of threads (or lanes) used by the algorithm. Change this one will change the hashing output
 	saltLength  uint32 // Length of the random salt. 16 bytes is recommended for password hashing
 	keyLength   uint32 // Length of the generated key (or password hash). 16 bytes or more is recommended.
+}
+
+func NewArgon(cfg config.Config) *argon2id {
+	return &argon2id{
+		memory:      cfg.ARGON2IDMemory,
+		iterations:  cfg.ARGON2IDIteration,
+		parallelism: cfg.ARGON2IDParallelsism,
+		saltLength:  cfg.ARGON2IDSaltLength,
+		keyLength:   cfg.ARGON2IDKeyLength,
+	}
 }
 
 func (a *argon2id) HashPassword(password string) (string, error) {
@@ -116,7 +131,7 @@ func (a *argon2id) comparePasswordAndHash(password, encodedHash string) (match b
 	// Check that the contents of the hashed passwords are identical. Note
 	// that we are using the subtle.ConstantTimeCompare() function for this
 	// to help prevent timing attacks.
-	if subtle.ConstantTimeCompare(hash, otherHash) == 1 {
+	if subtle.ConstantTimeCompare(hash, otherHash) == constantTimeMatch {
 		return true, nil
 	}
 	return false, nil
