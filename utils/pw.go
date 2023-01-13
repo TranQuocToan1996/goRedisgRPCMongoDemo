@@ -41,6 +41,12 @@ type bcryptImpl struct {
 	cost int
 }
 
+func NewBcrypt(cfg config.Config) *bcryptImpl {
+	return &bcryptImpl{
+		cost: cfg.BcryptCost,
+	}
+}
+
 func (b *bcryptImpl) HashPassword(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), b.cost)
 
