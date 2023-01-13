@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"html/template"
 	"log"
-	"net/mail"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -22,10 +21,10 @@ var (
 )
 
 func IsEmail(email string) bool {
-	if emailRegex == nil {
-		_, err := mail.ParseAddress(email)
-		return err == nil
-	}
+	// if emailRegex == nil {
+	// 	_, err := mail.ParseAddress(email)
+	// 	return err == nil
+	// }
 	return emailRegex.MatchString(email)
 }
 

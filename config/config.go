@@ -25,13 +25,14 @@ type Config struct {
 	ARGON2IDIteration     uint32        `mapstructure:"ARGON2ID_ITERATION"`
 	ARGON2IDParallelsism  uint8         `mapstructure:"ARGON2ID_PARALLELISM"`
 	ARGON2IDSaltLength    uint32        `mapstructure:"ARGON2ID_SALT_LENGTH"`
-	ARGON2IDKeyLength     uint32        `mapstructure:"ARGON2ID_KEY_LENGTH=32"`
+	ARGON2IDKeyLength     uint32        `mapstructure:"ARGON2ID_KEY_LENGTH"`
 	Origin                string        `mapstructure:"CLIENT_ORIGIN"`
 	EmailFrom             string        `mapstructure:"EMAIL_FROM"`
 	SMTPHost              string        `mapstructure:"SMTP_HOST"`
 	SMTPPass              string        `mapstructure:"SMTP_PASS"`
 	SMTPPort              int           `mapstructure:"SMTP_PORT"`
 	SMTPUser              string        `mapstructure:"SMTP_USER"`
+	GrpcServerAddress     string        `mapstructure:"GRPC_SERVER_ADDRESS"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

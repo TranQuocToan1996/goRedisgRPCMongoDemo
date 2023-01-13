@@ -3,20 +3,25 @@ package main
 import (
 	"context"
 	"fmt"
-	"html/template"
 	"log"
+	"net"
 	"net/http"
 
 	"github.com/TranQuocToan1996/redislearn/config"
 	"github.com/TranQuocToan1996/redislearn/controllers"
+	"github.com/TranQuocToan1996/redislearn/gapi"
+	"github.com/TranQuocToan1996/redislearn/pb"
 	"github.com/TranQuocToan1996/redislearn/routes"
 	"github.com/TranQuocToan1996/redislearn/services"
+	"github.com/TranQuocToan1996/redislearn/utils"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 var (
@@ -34,7 +39,7 @@ var (
 	AuthController      controllers.AuthController
 	AuthRouteController routes.AuthRouteController
 
-	temp *template.Template
+	temp, _ = utils.ParseTemplateDir("./templates")
 )
 
 func init() {
@@ -94,6 +99,11 @@ func main() {
 
 	defer mongoclient.Disconnect(ctx)
 
+	// startGinServer(config)
+	startGrpcServer(config)
+}
+
+func startGinServer(config config.Config) {
 	value, err := redisclient.Get("test").Result()
 
 	if err == redis.Nil {
@@ -103,12 +113,10 @@ func main() {
 	}
 
 	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowOrigins = []string{"http://localhost:8000", "http://localhost:3000"}
+	corsConfig.AllowOrigins = []string{config.Origin}
 	corsConfig.AllowCredentials = true
 
 	server.Use(cors.New(corsConfig))
-
-	server.SetTrustedProxies(nil)
 
 	router := server.Group("/api")
 	router.GET("/healthchecker", func(ctx *gin.Context) {
@@ -118,4 +126,26 @@ func main() {
 	AuthRouteController.AuthRoute(router, userService)
 	UserRouteController.UserRoute(router, userService)
 	log.Fatal(server.Run(":" + config.Port))
+}
+
+func startGrpcServer(config config.Config) {
+	server, err := gapi.NewGrpcServer(config, authService, userService, authCollection, temp)
+	if err != nil {
+		log.Fatal("cannot create grpc server: ", err)
+	}
+
+	grpcServer := grpc.NewServer()
+	pb.RegisterAuthServiceServer(grpcServer, server)
+	reflection.Register(grpcServer)
+
+	listener, err := net.Listen("tcp", config.GrpcServerAddress)
+	if err != nil {
+		log.Fatal("cannot create grpc server: ", err)
+	}
+
+	log.Printf("start gRPC server on %s", listener.Addr().String())
+	err = grpcServer.Serve(listener)
+	if err != nil {
+		log.Fatal("cannot create grpc server: ", err)
+	}
 }

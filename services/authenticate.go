@@ -41,7 +41,7 @@ func NewAuthService(collection *mongo.Collection, ctx context.Context) AuthServi
 
 func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBResponse, error) {
 
-	if utils.IsEmail(user.Email) {
+	if !utils.IsEmail(user.Email) {
 		return nil, ErrInvalidEmail
 	}
 
@@ -65,15 +65,6 @@ func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBRespo
 		}
 		return nil, err
 	}
-
-	// // Create a unique index for the email field
-	// opt := options.Index()
-	// opt.SetUnique(true)
-	// index := mongo.IndexModel{Keys: bson.M{"email": 1}, Options: opt}
-
-	// if _, err := uc.collection.Indexes().CreateOne(uc.ctx, index); err != nil {
-	// 	return nil, errors.New("could not create index for email")
-	// }
 
 	var newUser *models.DBResponse
 	query := bson.M{"_id": res.InsertedID}

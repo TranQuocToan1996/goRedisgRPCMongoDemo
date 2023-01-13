@@ -27,11 +27,10 @@ var (
 	Pw passworder
 )
 
-// func init() {
-// 	Pw = &bcryptImpl{
-// 		cost: bcrypt.DefaultCost,
-// 	}
-// }
+func init() {
+	cfg, _ := config.LoadConfig(".")
+	Pw = NewArgon(cfg)
+}
 
 type passworder interface {
 	HashPassword(password string) (string, error)
