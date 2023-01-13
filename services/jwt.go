@@ -31,7 +31,7 @@ type UserClaim struct {
 	User UserClaimData `json:"user"`
 }
 
-func Init(cfg config.Config) error {
+func NewJWT(cfg config.Config) error {
 	JwtObj = &jwtProvider{config: cfg}
 
 	blockPriv, _ := pem.Decode(cfg.PrivBuf)

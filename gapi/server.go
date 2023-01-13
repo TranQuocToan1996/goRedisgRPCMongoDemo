@@ -120,3 +120,5 @@ func (server *Server) SignUpUser(ctx context.Context, req *pb.SignUpUserInput) (
 	}
 	return res, nil
 }
+
+

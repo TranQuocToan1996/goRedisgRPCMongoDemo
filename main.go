@@ -24,17 +24,19 @@ import (
 )
 
 var (
-	server      = gin.Default()
-	ctx         = context.Background()
-	mongoclient *mongo.Client
+	server = gin.Default()
+	ctx    = context.Background()
+
+	mongoclient    *mongo.Client
+	authCollection *mongo.Collection
+
 	redisclient *redis.Client
 
-	userService         services.UserService
+	userService services.UserService
+	authService services.AuthService
+
 	UserController      controllers.UserController
 	UserRouteController routes.UserRouteController
-
-	authCollection      *mongo.Collection
-	authService         services.AuthService
 	AuthController      controllers.AuthController
 	AuthRouteController routes.AuthRouteController
 
@@ -42,13 +44,16 @@ var (
 )
 
 func init() {
-	config, err := config.LoadConfig(".")
+	cfg, err := config.LoadConfig(".")
 	if err != nil {
-		log.Fatal("Could not load environment variables", err)
+		cfg, err = config.LoadConfig("../../")
+		if err != nil {
+			log.Fatal("Could not load config", err)
+		}
 	}
 
 	// Connect to MongoDB
-	mongoconnOpt := options.Client().ApplyURI(config.DBUri)
+	mongoconnOpt := options.Client().ApplyURI(cfg.DBUri)
 	mongoclient, err := mongo.Connect(ctx, mongoconnOpt)
 
 	if err != nil {
@@ -62,7 +67,7 @@ func init() {
 	log.Println("MongoDB successfully connected...")
 
 	redisclient = redis.NewClient(&redis.Options{
-		Addr: config.RedisUri,
+		Addr: cfg.RedisUri,
 	})
 
 	if _, err := redisclient.Ping().Result(); err != nil {
@@ -87,19 +92,27 @@ func init() {
 	UserController = controllers.NewUserController(userService)
 	UserRouteController = routes.NewRouteUserController(UserController)
 
+	err = services.NewJWT(cfg)
+	if err != nil {
+		panic(err)
+	}
+
 }
 
 func main() {
-	config, err := config.LoadConfig(".")
+	cfg, err := config.LoadConfig(".")
 
 	if err != nil {
-		log.Fatal("Could not load config", err)
+		cfg, err = config.LoadConfig("../../")
+		if err != nil {
+			log.Fatal("Could not load config", err)
+		}
 	}
 
 	defer mongoclient.Disconnect(ctx)
 
 	// startGinServer(config)
-	startGrpcServer(config)
+	startGrpcServer(cfg)
 }
 
 func startGinServer(config config.Config) {
@@ -128,13 +141,20 @@ func startGinServer(config config.Config) {
 }
 
 func startGrpcServer(config config.Config) {
-	server, err := gapi.NewGrpcServer(config, authService, userService, authCollection, temp)
+	authServer, err := gapi.NewGrpcAuthServer(config, authService, userService, authCollection)
 	if err != nil {
-		log.Fatal("cannot create grpc server: ", err)
+		log.Fatal("cannot create grpc authServer: ", err)
+	}
+
+	userServer, err := gapi.NewGrpcUserServer(config, userService, authCollection)
+	if err != nil {
+		log.Fatal("cannot create grpc userServer: ", err)
 	}
 
 	grpcServer := grpc.NewServer()
-	pb.RegisterAuthServiceServer(grpcServer, server)
+
+	pb.RegisterAuthServiceServer(grpcServer, authServer)
+	pb.RegisterUserServiceServer(grpcServer, userServer)
 	reflection.Register(grpcServer)
 
 	listener, err := net.Listen("tcp", config.GrpcServerAddress)

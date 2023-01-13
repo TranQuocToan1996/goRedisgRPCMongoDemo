@@ -29,7 +29,7 @@ var (
 
 func init() {
 	cfg, _ := config.LoadConfig(".")
-	Pw = NewArgon(cfg)
+	Pw = NewArgon(cfg) // Default using Argon2id since it is the best algo for hashing pw
 }
 
 type passworder interface {
@@ -122,7 +122,7 @@ func (a *argon2id) generateRandomBytes(n uint32) ([]byte, error) {
 	return b, nil
 }
 
-func (a *argon2id) comparePasswordAndHash(password, encodedHash string) (match bool, err error) {
+func (a *argon2id) comparePasswordAndHash(encodedHash, password string) (match bool, err error) {
 	// Extract the parameters, salt and derived key from the encoded password
 	// hash.
 	p, salt, hash, err := a.decodeHash(encodedHash)
