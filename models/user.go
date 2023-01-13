@@ -53,3 +53,12 @@ func FilteredResponse(user *DBResponse) UserResponse {
 		UpdatedAt: user.UpdatedAt,
 	}
 }
+
+type ForgotPasswordInput struct {
+	Email string `json:"email" binding:"required"`
+}
+
+type ResetPasswordInput struct {
+	Password        string `json:"password" binding:"required"`
+	PasswordConfirm string `json:"passwordConfirm" binding:"required"`
+}

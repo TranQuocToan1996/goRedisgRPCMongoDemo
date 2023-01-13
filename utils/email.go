@@ -3,10 +3,13 @@ package utils
 import (
 	"bytes"
 	"crypto/tls"
+	"fmt"
+	"html/template"
 	"log"
 	"net/mail"
+	"os"
+	"path/filepath"
 	"regexp"
-	"text/template"
 
 	"github.com/TranQuocToan1996/redislearn/config"
 	"github.com/TranQuocToan1996/redislearn/models"
@@ -69,4 +72,25 @@ func SendEmail(user *models.DBResponse, data *EmailData, temp *template.Template
 		return err
 	}
 	return nil
+}
+
+func ParseTemplateDir(dir string) (*template.Template, error) {
+	var paths []string
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			paths = append(paths, path)
+		}
+		return nil
+	})
+
+	fmt.Println("Am parsing templates...")
+
+	if err != nil {
+		return nil, err
+	}
+
+	return template.ParseFiles(paths...)
 }
