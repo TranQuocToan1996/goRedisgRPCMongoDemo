@@ -40,6 +40,11 @@ var (
 	AuthController      controllers.AuthController
 	AuthRouteController routes.AuthRouteController
 
+	postService         services.PostService
+	PostController      controllers.PostController
+	postCollection      *mongo.Collection
+	PostRouteController routes.PostRouteController
+
 	temp, _ = utils.ParseTemplateDir("./templates")
 )
 
@@ -96,6 +101,11 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+
+	postCollection = mongoclient.Database("golang_mongodb").Collection("posts")
+	postService = services.NewPostService(postCollection, ctx)
+	PostController = controllers.NewPostController(postService)
+	PostRouteController = routes.NewPostControllerRoute(PostController)
 
 }
 
