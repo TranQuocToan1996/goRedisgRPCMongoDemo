@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -60,7 +59,7 @@ func init() {
 		panic(err)
 	}
 
-	fmt.Println("MongoDB successfully connected...")
+	log.Println("MongoDB successfully connected...")
 
 	redisclient = redis.NewClient(&redis.Options{
 		Addr: config.RedisUri,
@@ -76,7 +75,7 @@ func init() {
 		panic(err)
 	}
 
-	fmt.Println("Redis client connected successfully...")
+	log.Println("Redis client connected successfully...")
 
 	// Collections
 	authCollection = mongoclient.Database("golang_mongodb").Collection("users")
@@ -107,7 +106,7 @@ func startGinServer(config config.Config) {
 	value, err := redisclient.Get("test").Result()
 
 	if err == redis.Nil {
-		fmt.Println("key: test does not exist")
+		log.Println("key: test does not exist")
 	} else if err != nil {
 		panic(err)
 	}

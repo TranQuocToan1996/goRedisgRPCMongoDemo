@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package pb;
+
+
+import "user.proto";
+option go_package = "github.com/TranQuocToan1996/redislearn/pb";
+
+message SignUpUserInput {
+  string name = 1;
+  string email = 2;
+  string password = 3;
+  string passwordConfirm = 4;
+}
+
+message SignUpUserResponse { User user = 1; }
+

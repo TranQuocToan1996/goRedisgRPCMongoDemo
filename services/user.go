@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 	"errors"
-	"fmt"
+	"log"
 	"strings"
 
 	"github.com/TranQuocToan1996/redislearn/models"
@@ -78,9 +78,9 @@ func (uc *UserServiceImpl) UpdateUserById(id string, field string, value string)
 	update := bson.D{{Key: "$set", Value: bson.D{{Key: field, Value: value}}}}
 	result, err := uc.collection.UpdateOne(uc.ctx, query, update)
 
-	fmt.Print(result.ModifiedCount)
+	log.Print(result.ModifiedCount)
 	if err != nil {
-		fmt.Print(err)
+		log.Print(err)
 		return &models.DBResponse{}, err
 	}
 
@@ -92,9 +92,9 @@ func (uc *UserServiceImpl) UpdateOne(field string, value interface{}) (*models.D
 	update := bson.D{{Key: "$set", Value: bson.D{{Key: field, Value: value}}}}
 	result, err := uc.collection.UpdateOne(uc.ctx, query, update)
 
-	fmt.Print(result.ModifiedCount)
+	log.Print(result.ModifiedCount)
 	if err != nil {
-		fmt.Print(err)
+		log.Print(err)
 		return &models.DBResponse{}, err
 	}
 
