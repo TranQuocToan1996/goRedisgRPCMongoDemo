@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/TranQuocToan1996/redislearn/config"
 	"github.com/TranQuocToan1996/redislearn/services"
 	"github.com/gin-gonic/gin"
 )
@@ -29,8 +28,7 @@ func DeserializeUser(userService services.UserService) gin.HandlerFunc {
 			return
 		}
 
-		config, _ := config.LoadConfig(".")
-		sub, err := utils.ValidateToken(access_token, config.AccessTokenPublicKey)
+		sub, err := services.JwtObj.ValidateToken(access_token)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "fail", "message": err.Error()})
 			return

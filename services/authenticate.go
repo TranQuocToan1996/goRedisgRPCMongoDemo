@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"log"
 	"strings"
 	"time"
 
@@ -27,15 +28,15 @@ type AuthServiceImpl struct {
 	ctx        context.Context
 }
 
-func NewAuthService(collection *mongo.Collection, ctx context.Context) (AuthService, error) {
+func NewAuthService(collection *mongo.Collection, ctx context.Context) AuthService {
 	opt := options.Index()
 	opt.SetUnique(true)
 	index := mongo.IndexModel{Keys: bson.M{"email": 1}, Options: opt}
 
 	if _, err := collection.Indexes().CreateOne(ctx, index); err != nil {
-		return nil, errors.New("could not create index for email")
+		log.Fatal("could not create index for email")
 	}
-	return &AuthServiceImpl{collection, ctx}, nil
+	return &AuthServiceImpl{collection, ctx}
 }
 
 func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBResponse, error) {

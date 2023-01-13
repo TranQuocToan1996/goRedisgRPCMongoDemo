@@ -10,6 +10,7 @@ import (
 	"github.com/TranQuocToan1996/redislearn/controllers"
 	"github.com/TranQuocToan1996/redislearn/routes"
 	"github.com/TranQuocToan1996/redislearn/services"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -89,7 +90,7 @@ func main() {
 
 	defer mongoclient.Disconnect(ctx)
 
-	value, err := redisclient.Get(ctx, "test").Result()
+	value, err := redisclient.Get("test").Result()
 
 	if err == redis.Nil {
 		fmt.Println("key: test does not exist")
@@ -102,6 +103,8 @@ func main() {
 	corsConfig.AllowCredentials = true
 
 	server.Use(cors.New(corsConfig))
+
+	server.SetTrustedProxies(nil)
 
 	router := server.Group("/api")
 	router.GET("/healthchecker", func(ctx *gin.Context) {

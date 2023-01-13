@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/TranQuocToan1996/redislearn/controllers"
 	"github.com/TranQuocToan1996/redislearn/middleware"
 	"github.com/TranQuocToan1996/redislearn/services"
 	"github.com/gin-gonic/gin"

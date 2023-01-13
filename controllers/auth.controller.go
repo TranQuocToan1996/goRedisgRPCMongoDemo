@@ -8,7 +8,9 @@ import (
 	"github.com/TranQuocToan1996/redislearn/config"
 	"github.com/TranQuocToan1996/redislearn/models"
 	"github.com/TranQuocToan1996/redislearn/services"
+	"github.com/TranQuocToan1996/redislearn/utils"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type AuthController struct {
@@ -48,18 +50,17 @@ func (ac *AuthController) SignUpUser(ctx *gin.Context) {
 }
 
 func (ac *AuthController) RefreshAccessToken(ctx *gin.Context) {
-	message := "could not refresh access token"
 
 	cookie, err := ctx.Cookie("refresh_token")
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "message": message})
+		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "message": "could not refresh access token"})
 		return
 	}
 
 	config, _ := config.LoadConfig(".")
 
-	sub, err := utils.ValidateToken(cookie, config.RefreshTokenPublicKey)
+	sub, err := services.JwtObj.ValidateToken(cookie)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "message": err.Error()})
 		return
@@ -71,7 +72,7 @@ func (ac *AuthController) RefreshAccessToken(ctx *gin.Context) {
 		return
 	}
 
-	access_token, err := utils.CreateToken(config.AccessTokenExpiresIn, user.ID, config.AccessTokenPrivateKey)
+	access_token, err := services.JwtObj.CreateToken(config.AccessTokenExpiresIn, user.ID.Hex())
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "message": err.Error()})
 		return
@@ -89,4 +90,49 @@ func (ac *AuthController) LogoutUser(ctx *gin.Context) {
 	ctx.SetCookie("logged_in", "", -1, "/", "localhost", false, true)
 
 	ctx.JSON(http.StatusOK, gin.H{"status": "success"})
+}
+
+func (ac *AuthController) SignInUser(ctx *gin.Context) {
+	var credentials *models.SignInInput
+
+	if err := ctx.ShouldBindJSON(&credentials); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
+
+	user, err := ac.userService.FindUserByEmail(credentials.Email)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or password"})
+			return
+		}
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
+
+	if err := utils.Pw.VerifyPassword(user.Password, credentials.Password); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": "Invalid email or Password"})
+		return
+	}
+
+	config, _ := config.LoadConfig(".")
+
+	// Generate Tokens
+	access_token, err := services.JwtObj.CreateToken(config.AccessTokenExpiresIn, user.ID.Hex())
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
+
+	refresh_token, err := services.JwtObj.CreateToken(config.RefreshTokenExpiresIn, user.ID.Hex())
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
+
+	ctx.SetCookie("access_token", access_token, config.AccessTokenMaxAge*60, "/", "localhost", false, true)
+	ctx.SetCookie("refresh_token", refresh_token, config.RefreshTokenMaxAge*60, "/", "localhost", false, true)
+	ctx.SetCookie("logged_in", "true", config.AccessTokenMaxAge*60, "/", "localhost", false, false)
+
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "access_token": access_token})
 }
