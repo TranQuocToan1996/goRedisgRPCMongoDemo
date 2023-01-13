@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"time"
 
 	"github.com/spf13/viper"
@@ -25,14 +26,18 @@ type Config struct {
 	ARGON2IDParallelsism  uint8         `mapstructure:"ARGON2ID_PARALLELISM"`
 	ARGON2IDSaltLength    uint32        `mapstructure:"ARGON2ID_SALT_LENGTH"`
 	ARGON2IDKeyLength     uint32        `mapstructure:"ARGON2ID_KEY_LENGTH=32"`
+	Origin                string        `mapstructure:"CLIENT_ORIGIN"`
+	EmailFrom             string        `mapstructure:"EMAIL_FROM"`
+	SMTPHost              string        `mapstructure:"SMTP_HOST"`
+	SMTPPass              string        `mapstructure:"SMTP_PASS"`
+	SMTPPort              int           `mapstructure:"SMTP_PORT"`
+	SMTPUser              string        `mapstructure:"SMTP_USER"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
-	// TODO: Read key
 	viper.AddConfigPath(path)
 	viper.SetConfigType("env")
-	viper.SetConfigName("app")
-
+	viper.SetConfigName("config")
 	viper.AutomaticEnv()
 
 	err = viper.ReadInConfig()
@@ -41,5 +46,23 @@ func LoadConfig(path string) (config Config, err error) {
 	}
 
 	err = viper.Unmarshal(&config)
+	loadKeyBuf(&config)
 	return
+}
+
+func loadKeyBuf(cfg *Config) error {
+	priBuf, err := os.ReadFile(cfg.AccessTokenPrivateKey)
+	if err != nil {
+		return err
+	}
+
+	pubBuf, err := os.ReadFile(cfg.AccessTokenPublicKey)
+	if err != nil {
+		return err
+	}
+
+	cfg.PrivBuf = priBuf
+	cfg.PubBuf = pubBuf
+
+	return nil
 }
