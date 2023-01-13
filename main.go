@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"goRedisDemo/config"
 	"log"
 	"net/http"
 
+	"github.com/TranQuocToan1996/redislearn/config"
+	"github.com/TranQuocToan1996/redislearn/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -34,6 +35,8 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+
+	utils.Pw.HashPassword()
 
 	if err := mongoclient.Ping(ctx, readpref.Primary()); err != nil {
 		panic(err)
