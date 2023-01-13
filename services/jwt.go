@@ -55,7 +55,7 @@ func NewJWT(cfg config.Config) error {
 	return nil
 }
 
-func (j *jwtProvider) CreateToken(ttl time.Duration, uid string) (string, error) {
+func (j *jwtProvider) CreateToken(uid string) (string, error) {
 	t := jwt.New(jwt.SigningMethodRS256)
 	t.Claims = &UserClaim{
 		&jwt.StandardClaims{
@@ -67,7 +67,7 @@ func (j *jwtProvider) CreateToken(ttl time.Duration, uid string) (string, error)
 	return t.SignedString(j.signKey)
 }
 
-func (j *jwtProvider) CreateRefreshToken(ttl time.Duration, uid string) (string, error) {
+func (j *jwtProvider) CreateRefreshToken(uid string) (string, error) {
 	t := jwt.New(jwt.SigningMethodRS256)
 	t.Claims = &UserClaim{
 		&jwt.StandardClaims{

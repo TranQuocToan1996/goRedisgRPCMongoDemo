@@ -114,7 +114,7 @@ func (ac *AuthController) RefreshAccessToken(ctx *gin.Context) {
 		return
 	}
 
-	access_token, err := services.JwtObj.CreateToken(config.AccessTokenExpiresIn, user.ID.Hex())
+	access_token, err := services.JwtObj.CreateToken(user.ID.Hex())
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "fail", "message": err.Error()})
 		return
@@ -160,13 +160,13 @@ func (ac *AuthController) SignInUser(ctx *gin.Context) {
 	config, _ := config.LoadConfig(".")
 
 	// Generate Tokens
-	access_token, err := services.JwtObj.CreateToken(config.AccessTokenExpiresIn, user.ID.Hex())
+	access_token, err := services.JwtObj.CreateToken(user.ID.Hex())
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return
 	}
 
-	refresh_token, err := services.JwtObj.CreateRefreshToken(config.RefreshTokenExpiresIn, user.ID.Hex())
+	refresh_token, err := services.JwtObj.CreateRefreshToken(user.ID.Hex())
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
 		return

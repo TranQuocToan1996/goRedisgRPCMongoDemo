@@ -37,14 +37,14 @@ func (authServer *AuthServer) SignInUser(ctx context.Context, req *pb.SignInUser
 	}
 
 	// Generate Tokens
-	access_token, err := services.JwtObj.CreateToken(authServer.config.AccessTokenExpiresIn, user.ID.Hex())
+	access_token, err := services.JwtObj.CreateToken(user.ID.Hex())
 	if err != nil {
 
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 
 	}
 
-	refresh_token, err := services.JwtObj.CreateRefreshToken(authServer.config.RefreshTokenExpiresIn, user.ID.Hex())
+	refresh_token, err := services.JwtObj.CreateRefreshToken(user.ID.Hex())
 	if err != nil {
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
