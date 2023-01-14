@@ -78,5 +78,6 @@ func (uc *AuthServiceImpl) SignUpUser(user *models.SignUpInput) (*models.DBRespo
 }
 
 func (uc *AuthServiceImpl) SignInUser(*models.SignInInput) (*models.DBResponse, error) {
+	//TODO: Need implement
 	return nil, nil
 }

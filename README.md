@@ -9,3 +9,7 @@ TODO:
 - Add logger
 - Need Recover for gRPCServer from panic
 - Posts route: setEx some requests to redis. Cloud load mongo to redis at the begin?
+- Little work for you: implement:
+```
+func (uc *AuthServiceImpl) SignInUser(*models.SignInInput) (*models.DBResponse, error)
+```

@@ -52,6 +52,7 @@ func NewJWT(cfg config.Config) error {
 
 	// JwtObj.verifyKey = pubInterface.(*rsa.PublicKey)
 	JwtObj.verifyKey = &privKey.PublicKey
+
 	return nil
 }
 
